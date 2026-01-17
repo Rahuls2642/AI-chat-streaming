@@ -9,6 +9,9 @@ function App() {
   const [isStreaming, setIsStreaming] = useState(false)
   const messagesEndRef = useRef<HTMLDivElement | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [theme, setTheme] = useState<'light' | 'dark'>(
+  () => (localStorage.getItem('theme') as 'light' | 'dark') || 'light'
+)
 
 //Handele socket message
 const handleSocketMessage = useCallback((data: any) => {
@@ -42,6 +45,7 @@ const handleSocketMessage = useCallback((data: any) => {
 }, [])
 
  const { send, status } = useWebSocket(handleSocketMessage)
+
 //Handle send message
  function handleSend(text: string) {
   if (status !== 'connected') {
@@ -73,13 +77,55 @@ const handleSocketMessage = useCallback((data: any) => {
     content: text,
   })
 }
+//Bonus
+//Message persistence
+const STORAGE_KEY = 'chat-messages'
+const isFirstRender = useRef(true)
+
+// LOAD once
+useEffect(() => {
+  const saved = localStorage.getItem(STORAGE_KEY)
+  if (saved) {
+    setMessages(JSON.parse(saved))
+  }
+}, [])
+
+// SAVE after first render only
+useEffect(() => {
+  if (isFirstRender.current) {
+    isFirstRender.current = false
+    return
+  }
+
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(messages))
+}, [messages])
+
+
+//claer chat
+function clearChat() {
+  setMessages([])
+  setError(null)
+  localStorage.removeItem(STORAGE_KEY)
+}
+
+//Toggle theme
+useEffect(() => {
+  localStorage.setItem('theme', theme)
+  document.documentElement.classList.toggle('dark', theme === 'dark')
+}, [theme])
+
+
+
 //Auto scroll
  useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' })
   }, [messages])
 
+
   return (
-    <div className="h-screen flex flex-col bg-zinc-50">
+    <div className="h-screen flex flex-col bg-zinc-100 text-zinc-900 dark:bg-zinc-900 dark:text-zinc-100">
+
+
 
   <header className="
     sticky top-0 z-10 px-5 py-3 flex items-center justify-between bg-zinc-50/80 backdrop-blur border-b border-zinc-200
@@ -96,6 +142,20 @@ const handleSocketMessage = useCallback((data: any) => {
       />
       {status === 'connected' ? 'Online' : 'Offline'}
     </div>
+
+
+    <button
+  onClick={clearChat}
+  className="text-sm text-red-600 hover:underline"
+>
+  Clear chat
+</button>
+<button
+  onClick={() => setTheme(theme === 'light' ? 'dark' : 'light')}
+  className="text-sm"
+>
+  {theme === 'light' ? '🌙' : '☀️'}
+</button>
   </header>
 
  
