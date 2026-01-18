@@ -88,7 +88,7 @@ Persistence, debugging & polish: ~2–3 hours
 ## Demo Video
 
 🔗 Demo Video Link:
-##
+https://youtu.be/juLfKVzPIPA?si=yoVctuK3Hu_mmn6a
 
 ## Notes
 
